@@ -1,0 +1,6 @@
+__pycache__/
+*.pt
+ckpt.pt*
+runs/
+data/
+*.zip
