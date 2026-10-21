@@ -1,0 +1,322 @@
+
+arrow_upwardarrow_downwarddelete
+%%bash
+cd /kaggle/working/zombie_code
+C="--steps 6000 --facts 0 --mix mqar=.4,hop=.2,add=.2,state=.1,induct=.1 --curriculum 1500 --dormancy-every 500"
+python reason_parallel.py --archs moe,zombie_memonly_L24,zombie_memonly_L24xc --seeds 3 --out /kaggle/working/paper -- --lr 1e-3 $C
+python reason_aggregate.py --runs /kaggle/working/paper --pair zombie_memonly_L24xc,moe
+python reason_aggregate.py --runs /kaggle/working/paper --pair zombie_memonly_L24,moe
+2 GPU(s) -> 2 parallel worker(s); 3 job(s) to run
+[gpu 0] start zombie_memonly_L24xc seed 1
+[gpu 1] start zombie_memonly_L24 seed 2
+[gpu 0] done zombie_memonly_L24xc seed 1  [done] (test) mqar: id 1.000 ood 0.617 | hop: id 0.258 ood 0.114 | add: id 0.998 ood 0.000 | state: id 0.201 ood 0.183
+[gpu 0] start zombie_memonly_L24xc seed 2
+[gpu 1] done zombie_memonly_L24 seed 2  [done] (test) mqar: id 0.999 ood 0.374 | hop: id 0.261 ood 0.107 | add: id 1.000 ood 0.000 | state: id 0.210 ood 0.199
+[gpu 0] done zombie_memonly_L24xc seed 2  [done] (test) mqar: id 1.000 ood 0.470 | hop: id 0.237 ood 0.083 | add: id 1.000 ood 0.000 | state: id 0.205 ood 0.208
+
+finished.  failed: none
+logs:  <out>/<arch>_s<seed>/stdout.log   (see [val] lines with:  !grep -h '\[val\]' <out>/*/stdout.log)
+====================================================================================================
+MODELS
+  moe                  params  22.82M  lr 0.001  seeds [0, 1, 2]  steps 6000  27.3k tok/s
+  zombie_memonly_L24   params  22.87M  lr 0.001  seeds [0, 1, 2]  steps 6000  18.2k tok/s
+  zombie_memonly_L24xc params  22.87M  lr 0.001  seeds [0, 1, 2]  steps 6000  11.6k tok/s
+====================================================================================================
+PER-TASK ACCURACY (test, instance-exact; mean±std over seeds).  ID = trained difficulties, OOD = harder, unseen
+task                           moe   zombie_memonly_L24  zombie_memonly_L24x
+mqar     ID            0.745±0.442          0.734±0.454          0.877±0.213
+mqar     OOD           0.435±0.341          0.317±0.254          0.398±0.264
+hop      ID            0.169±0.077          0.184±0.080          0.199±0.084   <- NOT LEARNED by any model
+hop      OOD           0.090±0.005          0.094±0.012          0.097±0.016
+add      ID            1.000±0.000          1.000±0.000          0.999±0.001
+add      OOD           0.000±0.000          0.000±0.000          0.000±0.000
+state    ID            0.201±0.003          0.261±0.105          0.201±0.003
+state    OOD           0.205±0.014          0.196±0.006          0.194±0.013
+REASON   ID            0.529±0.128          0.545±0.106          0.569±0.075   (mean of mqar,hop,add,state)
+REASON   OOD           0.182±0.085          0.152±0.065          0.172±0.067
+====================================================================================================
+FRONTIER: hardest difficulty solved with acc>=0.9 / >=0.5 walking up from the easiest (median over seeds)
+mqar      moe:   32/48    zombie_memonly:   24/24    zombie_memonly:   24/32  
+hop       moe:    0/1     zombie_memonly:    0/1     zombie_memonly:    1/1   
+add       moe:    6/6     zombie_memonly:    6/6     zombie_memonly:    6/6   
+state     moe: none/none  zombie_memonly:    0/0     zombie_memonly: none/none
+====================================================================================================
+DIFFICULTY CURVES (test).  trivial = best cheat baseline;  * = OOD difficulty;  n = test instances
+-- mqar
+    diff     n  trivial               moe  zombie_memonly_L  zombie_memonly_L
+      2    500    0.516       0.856±0.249       0.821±0.309       0.989±0.018
+      4    500    0.280       0.751±0.431       0.761±0.410       0.944±0.097
+      8    500    0.172       0.730±0.468       0.721±0.481       0.899±0.176
+     16    500    0.122       0.704±0.513       0.690±0.532       0.795±0.354
+     24    500    0.094       0.684±0.547       0.677±0.538       0.756±0.421
+     32*   500    0.078       0.660±0.533       0.455±0.394       0.649±0.415
+     48*   500    0.062       0.391±0.296       0.329±0.258       0.333±0.225
+     64*   500    0.066       0.255±0.193       0.166±0.129       0.210±0.153
+-- hop
+    diff     n  trivial               moe  zombie_memonly_L  zombie_memonly_L
+      1    500    1.000       0.576±0.469       0.597±0.457       0.698±0.506
+      2    500    0.091       0.085±0.005       0.093±0.021       0.107±0.008
+      3    500    0.091       0.089±0.013       0.109±0.017       0.103±0.008
+      4    500    0.091       0.078±0.004       0.099±0.019       0.094±0.025
+      5    500    0.091       0.095±0.018       0.105±0.009       0.098±0.013
+      6    500    0.091       0.093±0.010       0.100±0.028       0.096±0.004
+      7*   500    0.091       0.083±0.009       0.094±0.007       0.095±0.016
+      8*   500    0.096       0.095±0.012       0.083±0.013       0.102±0.016
+     10*   500    0.091       0.090±0.005       0.106±0.021       0.095±0.019
+-- add
+    diff     n  trivial               moe  zombie_memonly_L  zombie_memonly_L
+      1      2    0.500       1.000±0.000       1.000±0.000       1.000±0.000
+      2    500    0.280       1.000±0.000       1.000±0.000       1.000±0.000
+      3    500    0.176       1.000±0.000       1.000±0.000       0.999±0.002
+      4    500    0.090       1.000±0.000       0.999±0.001       0.999±0.001
+      5    500    0.040       1.000±0.000       1.000±0.000       0.998±0.002
+      6    500    0.020       1.000±0.000       1.000±0.000       0.998±0.002
+      8*   500    0.006       0.000±0.000       0.000±0.000       0.000±0.000
+     10*   500    0.002       0.000±0.000       0.000±0.000       0.000±0.000
+-- state
+    diff     n  trivial               moe  zombie_memonly_L  zombie_memonly_L
+      2      1    1.000       0.333±0.577       0.333±0.577       0.667±0.577
+      4     28    0.357       0.429±0.495       0.976±0.041       0.190±0.115
+      8    500    0.226       0.212±0.011       0.459±0.418       0.203±0.009
+     12    500    0.224       0.206±0.010       0.209±0.021       0.201±0.011
+     16    500    0.218       0.195±0.022       0.189±0.014       0.205±0.017
+     24    500    0.212       0.189±0.018       0.185±0.013       0.196±0.002
+     32*   500    0.224       0.213±0.022       0.189±0.006       0.195±0.022
+     48*   500    0.216       0.196±0.007       0.203±0.009       0.193±0.003
+====================================================================================================
+LEARNING SPEED: first checkpoint (every 500 steps, 100 val instances) with accuracy >= 0.9;  '>N' = not by step N
+  add d=3
+     moe                  s0:1000  s1:1000  s2:1000
+     zombie_memonly_L24   s0:2500  s1:2000  s2:1500
+     zombie_memonly_L24xc s0:2000  s1:3000  s2:1500
+====================================================================================================
+PAIRED COMPARISONS  (A - B, positive = A better;  verdict needs >=3 seeds, |gap| > 2x pooled std, same sign in every seed)
+
+  zombie_memonly_L24xc (22.87M)  vs  moe (22.82M)   paired seeds [0, 1, 2]
+    PAIR mqar    ID  0.877±0.213 vs 0.745±0.442  gap +0.132 (per-seed -0.370, -0.000, +0.765)  -> indistinguishable
+    PAIR hop     ID  0.199±0.084 vs 0.169±0.077  gap +0.030 (per-seed -0.081, +0.019, +0.151)  -> n/a (task not learned by any model)
+    PAIR add     ID  0.999±0.001 vs 1.000±0.000  gap -0.001 (per-seed -0.001, -0.002, +0.000)  -> both at ceiling
+    PAIR state   ID  0.201±0.003 vs 0.201±0.003  gap +0.001 (per-seed -0.001, +0.002, +0.001)  -> indistinguishable
+    PAIR mqar    OOD 0.398±0.264 vs 0.435±0.341  gap -0.038 (per-seed -0.527, -0.014, +0.428)  -> indistinguishable
+    PAIR hop     OOD 0.097±0.016 vs 0.090±0.005  gap +0.008 (per-seed +0.001, +0.023, -0.001)  -> n/a (task not learned by any model)
+    PAIR add     OOD 0.000±0.000 vs 0.000±0.000  gap +0.000 (per-seed +0.000, +0.000, +0.000)  -> indistinguishable
+    PAIR state   OOD 0.194±0.013 vs 0.205±0.014  gap -0.010 (per-seed +0.004, -0.030, -0.005)  -> indistinguishable
+    PAIR REASON  ID  0.569±0.075 vs 0.529±0.128  gap +0.040 (per-seed -0.113, +0.005, +0.229)  -> indistinguishable
+    PAIR REASON  OOD 0.172±0.067 vs 0.182±0.085  gap -0.010 (per-seed -0.131, -0.005, +0.105)  -> indistinguishable
+====================================================================================================
+TASKS LEARNED AT ALL (best single run: mean ID accuracy minus trivial baseline, must exceed 0.05):
+   mqar   excess over trivial +0.763  -> learned
+   hop    excess over trivial +0.019  -> NOT LEARNED (no ranking possible)
+   add    excess over trivial +0.879  -> learned
+   state  excess over trivial +0.161  -> learned
+(cells with n < 30 held-out instances are shown in the curves but excluded from every summary number)
+====================================================================================================
+MODELS
+  moe                  params  22.82M  lr 0.001  seeds [0, 1, 2]  steps 6000  27.3k tok/s
+  zombie_memonly_L24   params  22.87M  lr 0.001  seeds [0, 1, 2]  steps 6000  18.2k tok/s
+  zombie_memonly_L24xc params  22.87M  lr 0.001  seeds [0, 1, 2]  steps 6000  11.6k tok/s
+====================================================================================================
+PER-TASK ACCURACY (test, instance-exact; mean±std over seeds).  ID = trained difficulties, OOD = harder, unseen
+task                           moe   zombie_memonly_L24  zombie_memonly_L24x
+mqar     ID            0.745±0.442          0.734±0.454          0.877±0.213
+mqar     OOD           0.435±0.341          0.317±0.254          0.398±0.264
+hop      ID            0.169±0.077          0.184±0.080          0.199±0.084   <- NOT LEARNED by any model
+hop      OOD           0.090±0.005          0.094±0.012          0.097±0.016
+add      ID            1.000±0.000          1.000±0.000          0.999±0.001
+add      OOD           0.000±0.000          0.000±0.000          0.000±0.000
+state    ID            0.201±0.003          0.261±0.105          0.201±0.003
+state    OOD           0.205±0.014          0.196±0.006          0.194±0.013
+REASON   ID            0.529±0.128          0.545±0.106          0.569±0.075   (mean of mqar,hop,add,state)
+REASON   OOD           0.182±0.085          0.152±0.065          0.172±0.067
+====================================================================================================
+FRONTIER: hardest difficulty solved with acc>=0.9 / >=0.5 walking up from the easiest (median over seeds)
+mqar      moe:   32/48    zombie_memonly:   24/24    zombie_memonly:   24/32  
+hop       moe:    0/1     zombie_memonly:    0/1     zombie_memonly:    1/1   
+add       moe:    6/6     zombie_memonly:    6/6     zombie_memonly:    6/6   
+state     moe: none/none  zombie_memonly:    0/0     zombie_memonly: none/none
+====================================================================================================
+DIFFICULTY CURVES (test).  trivial = best cheat baseline;  * = OOD difficulty;  n = test instances
+-- mqar
+    diff     n  trivial               moe  zombie_memonly_L  zombie_memonly_L
+      2    500    0.516       0.856±0.249       0.821±0.309       0.989±0.018
+      4    500    0.280       0.751±0.431       0.761±0.410       0.944±0.097
+      8    500    0.172       0.730±0.468       0.721±0.481       0.899±0.176
+     16    500    0.122       0.704±0.513       0.690±0.532       0.795±0.354
+     24    500    0.094       0.684±0.547       0.677±0.538       0.756±0.421
+     32*   500    0.078       0.660±0.533       0.455±0.394       0.649±0.415
+     48*   500    0.062       0.391±0.296       0.329±0.258       0.333±0.225
+     64*   500    0.066       0.255±0.193       0.166±0.129       0.210±0.153
+-- hop
+    diff     n  trivial               moe  zombie_memonly_L  zombie_memonly_L
+      1    500    1.000       0.576±0.469       0.597±0.457       0.698±0.506
+      2    500    0.091       0.085±0.005       0.093±0.021       0.107±0.008
+      3    500    0.091       0.089±0.013       0.109±0.017       0.103±0.008
+      4    500    0.091       0.078±0.004       0.099±0.019       0.094±0.025
+      5    500    0.091       0.095±0.018       0.105±0.009       0.098±0.013
+      6    500    0.091       0.093±0.010       0.100±0.028       0.096±0.004
+      7*   500    0.091       0.083±0.009       0.094±0.007       0.095±0.016
+      8*   500    0.096       0.095±0.012       0.083±0.013       0.102±0.016
+     10*   500    0.091       0.090±0.005       0.106±0.021       0.095±0.019
+-- add
+    diff     n  trivial               moe  zombie_memonly_L  zombie_memonly_L
+      1      2    0.500       1.000±0.000       1.000±0.000       1.000±0.000
+      2    500    0.280       1.000±0.000       1.000±0.000       1.000±0.000
+      3    500    0.176       1.000±0.000       1.000±0.000       0.999±0.002
+      4    500    0.090       1.000±0.000       0.999±0.001       0.999±0.001
+      5    500    0.040       1.000±0.000       1.000±0.000       0.998±0.002
+      6    500    0.020       1.000±0.000       1.000±0.000       0.998±0.002
+      8*   500    0.006       0.000±0.000       0.000±0.000       0.000±0.000
+     10*   500    0.002       0.000±0.000       0.000±0.000       0.000±0.000
+-- state
+    diff     n  trivial               moe  zombie_memonly_L  zombie_memonly_L
+      2      1    1.000       0.333±0.577       0.333±0.577       0.667±0.577
+      4     28    0.357       0.429±0.495       0.976±0.041       0.190±0.115
+      8    500    0.226       0.212±0.011       0.459±0.418       0.203±0.009
+     12    500    0.224       0.206±0.010       0.209±0.021       0.201±0.011
+     16    500    0.218       0.195±0.022       0.189±0.014       0.205±0.017
+     24    500    0.212       0.189±0.018       0.185±0.013       0.196±0.002
+     32*   500    0.224       0.213±0.022       0.189±0.006       0.195±0.022
+     48*   500    0.216       0.196±0.007       0.203±0.009       0.193±0.003
+====================================================================================================
+LEARNING SPEED: first checkpoint (every 500 steps, 100 val instances) with accuracy >= 0.9;  '>N' = not by step N
+  add d=3
+     moe                  s0:1000  s1:1000  s2:1000
+     zombie_memonly_L24   s0:2500  s1:2000  s2:1500
+     zombie_memonly_L24xc s0:2000  s1:3000  s2:1500
+====================================================================================================
+PAIRED COMPARISONS  (A - B, positive = A better;  verdict needs >=3 seeds, |gap| > 2x pooled std, same sign in every seed)
+
+  zombie_memonly_L24 (22.87M)  vs  moe (22.82M)   paired seeds [0, 1, 2]
+    PAIR mqar    ID  0.734±0.454 vs 0.745±0.442  gap -0.011 (per-seed -0.790, -0.007, +0.764)  -> indistinguishable
+    PAIR hop     ID  0.184±0.080 vs 0.169±0.077  gap +0.015 (per-seed -0.082, -0.048, +0.175)  -> n/a (task not learned by any model)
+    PAIR add     ID  1.000±0.000 vs 1.000±0.000  gap -0.000 (per-seed +0.000, -0.000, +0.000)  -> both at ceiling
+    PAIR state   ID  0.261±0.105 vs 0.201±0.003  gap +0.060 (per-seed +0.181, -0.007, +0.006)  -> indistinguishable
+    PAIR mqar    OOD 0.317±0.254 vs 0.435±0.341  gap -0.119 (per-seed -0.594, -0.094, +0.332)  -> indistinguishable
+    PAIR hop     OOD 0.094±0.012 vs 0.090±0.005  gap +0.005 (per-seed -0.003, -0.006, +0.023)  -> n/a (task not learned by any model)
+    PAIR add     OOD 0.000±0.000 vs 0.000±0.000  gap +0.000 (per-seed +0.000, +0.000, +0.000)  -> indistinguishable
+    PAIR state   OOD 0.196±0.006 vs 0.205±0.014  gap -0.009 (per-seed +0.001, -0.014, -0.014)  -> indistinguishable
+    PAIR REASON  ID  0.545±0.106 vs 0.529±0.128  gap +0.016 (per-seed -0.173, -0.016, +0.236)  -> indistinguishable
+    PAIR REASON  OOD 0.152±0.065 vs 0.182±0.085  gap -0.031 (per-seed -0.149, -0.028, +0.085)  -> indistinguishable
+====================================================================================================
+TASKS LEARNED AT ALL (best single run: mean ID accuracy minus trivial baseline, must exceed 0.05):
+   mqar   excess over trivial +0.763  -> learned
+   hop    excess over trivial +0.019  -> NOT LEARNED (no ranking possible)
+   add    excess over trivial +0.879  -> learned
+   state  excess over trivial +0.161  -> learned
+(cells with n < 30 held-out instances are shown in the curves but excluded from every summary number)
+2 GPU(s) -> 2 parallel worker(s); 3 job(s) to run
+[gpu 0] start zombie_memonly_L20 seed 0
+[gpu 1] start zombie_memonly_L20 seed 1
+[gpu 0] done zombie_memonly_L20 seed 0  [done] (test) mqar: id 0.212 ood 0.056 | hop: id 0.091 ood 0.095 | add: id 0.990 ood 0.000 | state: id 0.196 ood 0.204
+[gpu 0] start zombie_memonly_L20 seed 2
+[gpu 1] done zombie_memonly_L20 seed 1  [done] (test) mqar: id 0.331 ood 0.069 | hop: id 0.092 ood 0.079 | add: id 1.000 ood 0.000 | state: id 0.209 ood 0.205
+[gpu 0] done zombie_memonly_L20 seed 2  [done] (test) mqar: id 0.202 ood 0.035 | hop: id 0.090 ood 0.086 | add: id 0.890 ood 0.000 | state: id 0.568 ood 0.207
+
+finished.  failed: none
+logs:  <out>/<arch>_s<seed>/stdout.log   (see [val] lines with:  !grep -h '\[val\]' <out>/*/stdout.log)
+====================================================================================================
+MODELS
+  moe                  params  22.82M  lr 0.001  seeds [0, 1, 2]  steps 6000  29.0k tok/s
+  zombie_memonly_b29   params  22.90M  lr 0.003  seeds [0, 1, 2]  steps 6000  33.1k tok/s
+  zombie_memonly_L20   params  22.85M  lr 0.001  seeds [0, 1, 2]  steps 6000  18.8k tok/s
+====================================================================================================
+PER-TASK ACCURACY (test, instance-exact; mean±std over seeds).  ID = trained difficulties, OOD = harder, unseen
+task                           moe   zombie_memonly_b29   zombie_memonly_L20
+mqar     ID            0.242±0.078          0.412±0.515          0.248±0.072
+mqar     OOD           0.036±0.005          0.217±0.324          0.054±0.017
+hop      ID            0.094±0.008          0.113±0.093          0.091±0.001   <- NOT LEARNED by any model
+hop      OOD           0.092±0.008          0.072±0.013          0.087±0.008
+add      ID            1.000±0.000          0.334±0.573          0.960±0.061
+add      OOD           0.000±0.000          0.000±0.000          0.000±0.000
+state    ID            0.197±0.005          0.197±0.010          0.324±0.211
+state    OOD           0.208±0.004          0.203±0.008          0.205±0.002
+REASON   ID            0.383±0.017          0.264±0.295          0.406±0.033   (mean of mqar,hop,add,state)
+REASON   OOD           0.084±0.003          0.123±0.083          0.086±0.004
+====================================================================================================
+FRONTIER: hardest difficulty solved with acc>=0.9 / >=0.5 walking up from the easiest (median over seeds)
+mqar      moe: none/2     zombie_memonly:    0/0     zombie_memonly: none/2   
+hop       moe: none/none  zombie_memonly:    0/0     zombie_memonly: none/none
+add       moe:    6/6     zombie_memonly:    0/0     zombie_memonly:    6/6   
+state     moe: none/none  zombie_memonly: none/none  zombie_memonly:    0/0   
+====================================================================================================
+DIFFICULTY CURVES (test).  trivial = best cheat baseline;  * = OOD difficulty;  n = test instances
+-- mqar
+    diff     n  trivial               moe  zombie_memonly_b  zombie_memonly_L
+      2    500    0.516       0.609±0.203       0.513±0.477       0.522±0.030
+      4    500    0.280       0.294±0.106       0.432±0.503       0.323±0.174
+      8    500    0.172       0.148±0.031       0.389±0.531       0.199±0.088
+     16    500    0.122       0.091±0.024       0.369±0.544       0.111±0.054
+     24    500    0.094       0.069±0.030       0.357±0.552       0.086±0.024
+     32*   500    0.078       0.051±0.004       0.325±0.503       0.069±0.019
+     48*   500    0.062       0.031±0.005       0.215±0.309       0.053±0.015
+     64*   500    0.066       0.025±0.010       0.112±0.161       0.039±0.020
+-- hop
+    diff     n  trivial               moe  zombie_memonly_b  zombie_memonly_L
+      1    500    1.000       0.100±0.014       0.348±0.483       0.095±0.016
+      2    500    0.091       0.082±0.019       0.063±0.022       0.079±0.013
+      3    500    0.091       0.106±0.027       0.064±0.019       0.099±0.016
+      4    500    0.091       0.098±0.024       0.067±0.021       0.091±0.008
+      5    500    0.091       0.092±0.009       0.073±0.020       0.085±0.008
+      6    500    0.091       0.085±0.008       0.065±0.019       0.097±0.023
+      7*   500    0.091       0.093±0.018       0.069±0.016       0.093±0.008
+      8*   500    0.096       0.093±0.013       0.075±0.015       0.083±0.020
+     10*   500    0.091       0.091±0.004       0.071±0.017       0.084±0.011
+-- add
+    diff     n  trivial               moe  zombie_memonly_b  zombie_memonly_L
+      1      2    0.500       1.000±0.000       0.333±0.577       1.000±0.000
+      2    500    0.280       1.000±0.000       0.342±0.570       1.000±0.000
+      3    500    0.176       0.999±0.001       0.328±0.566       0.999±0.001
+      4    500    0.090       1.000±0.000       0.333±0.576       0.999±0.001
+      5    500    0.040       1.000±0.000       0.333±0.576       0.983±0.028
+      6    500    0.020       0.999±0.001       0.333±0.577       0.818±0.315
+      8*   500    0.006       0.000±0.000       0.000±0.000       0.000±0.000
+     10*   500    0.002       0.000±0.000       0.000±0.000       0.000±0.000
+-- state
+    diff     n  trivial               moe  zombie_memonly_b  zombie_memonly_L
+      2      1    1.000       1.000±0.000       0.000±0.000       0.667±0.577
+      4     28    0.357       0.976±0.021       0.417±0.444       0.988±0.021
+      8    500    0.226       0.192±0.005       0.188±0.023       0.443±0.399
+     12    500    0.224       0.203±0.007       0.188±0.019       0.357±0.297
+     16    500    0.218       0.198±0.018       0.207±0.002       0.287±0.154
+     24    500    0.212       0.196±0.012       0.205±0.013       0.209±0.008
+     32*   500    0.224       0.217±0.002       0.201±0.013       0.195±0.005
+     48*   500    0.216       0.199±0.009       0.205±0.003       0.216±0.006
+====================================================================================================
+LEARNING SPEED: first checkpoint (every 500 steps, 100 val instances) with accuracy >= 0.9;  '>N' = not by step N
+  add d=3
+     moe                  s0:2000  s1:4000  s2:2500
+     zombie_memonly_b29   s0:3500  s1:>5500  s2:>5500
+     zombie_memonly_L20   s0:1500  s1:3000  s2:4000
+====================================================================================================
+PAIRED COMPARISONS  (A - B, positive = A better;  verdict needs >=3 seeds, |gap| > 2x pooled std, same sign in every seed)
+
+  zombie_memonly_b29 (22.90M)  vs  moe (22.82M)   paired seeds [0, 1, 2]
+    PAIR mqar    ID  0.412±0.515 vs 0.242±0.078  gap +0.170 (per-seed +0.789, -0.299, +0.020)  -> indistinguishable
+    PAIR hop     ID  0.113±0.093 vs 0.094±0.008  gap +0.020 (per-seed +0.118, -0.035, -0.024)  -> n/a (task not learned by any model)
+    PAIR add     ID  0.334±0.573 vs 1.000±0.000  gap -0.666 (per-seed -0.004, -0.999, -0.995)  -> indistinguishable
+    PAIR state   ID  0.197±0.010 vs 0.197±0.005  gap -0.000 (per-seed +0.004, -0.008, +0.003)  -> indistinguishable
+    PAIR mqar    OOD 0.217±0.324 vs 0.036±0.005  gap +0.181 (per-seed +0.553, -0.015, +0.006)  -> indistinguishable
+    PAIR hop     OOD 0.072±0.013 vs 0.092±0.008  gap -0.020 (per-seed -0.002, -0.030, -0.029)  -> n/a (task not learned by any model)
+    PAIR add     OOD 0.000±0.000 vs 0.000±0.000  gap +0.000 (per-seed +0.000, +0.000, +0.000)  -> indistinguishable
+    PAIR state   OOD 0.203±0.008 vs 0.208±0.004  gap -0.005 (per-seed -0.014, +0.005, -0.005)  -> indistinguishable
+    PAIR REASON  ID  0.264±0.295 vs 0.383±0.017  gap -0.119 (per-seed +0.227, -0.335, -0.249)  -> indistinguishable
+    PAIR REASON  OOD 0.123±0.083 vs 0.084±0.003  gap +0.039 (per-seed +0.134, -0.010, -0.007)  -> indistinguishable
+
+  zombie_memonly_L20 (22.85M)  vs  moe (22.82M)   paired seeds [0, 1, 2]
+    PAIR mqar    ID  0.248±0.072 vs 0.242±0.078  gap +0.006 (per-seed +0.003, +0.000, +0.015)  -> indistinguishable
+    PAIR hop     ID  0.091±0.001 vs 0.094±0.008  gap -0.003 (per-seed -0.011, +0.006, -0.003)  -> n/a (task not learned by any model)
+    PAIR add     ID  0.960±0.061 vs 1.000±0.000  gap -0.040 (per-seed -0.010, +0.000, -0.110)  -> indistinguishable
+    PAIR state   ID  0.324±0.211 vs 0.197±0.005  gap +0.127 (per-seed +0.001, +0.015, +0.365)  -> indistinguishable
+    PAIR mqar    OOD 0.054±0.017 vs 0.036±0.005  gap +0.018 (per-seed +0.018, +0.039, -0.004)  -> indistinguishable
+    PAIR hop     OOD 0.087±0.008 vs 0.092±0.008  gap -0.005 (per-seed +0.009, -0.009, -0.015)  -> n/a (task not learned by any model)
+    PAIR add     OOD 0.000±0.000 vs 0.000±0.000  gap +0.000 (per-seed +0.000, +0.000, +0.000)  -> indistinguishable
+    PAIR state   OOD 0.205±0.002 vs 0.208±0.004  gap -0.003 (per-seed -0.008, -0.002, +0.002)  -> indistinguishable
+    PAIR REASON  ID  0.406±0.033 vs 0.383±0.017  gap +0.022 (per-seed -0.004, +0.005, +0.067)  -> indistinguishable
+    PAIR REASON  OOD 0.086±0.004 vs 0.084±0.003  gap +0.002 (per-seed +0.005, +0.007, -0.004)  -> indistinguishable
+====================================================================================================
+TASKS LEARNED AT ALL (best single run: mean ID accuracy minus trivial baseline, must exceed 0.05):
+   mqar   excess over trivial +0.761  -> learned
+   hop    excess over trivial -0.022  -> NOT LEARNED (no ranking possible)
+   add    excess over trivial +0.879  -> learned
+   state  excess over trivial +0.348  -> learned
+(cells with n < 30 held-out instances are shown in the curves but excluded from every summary number)
