@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "Zombie-Brain: a shared product-key memory in place of the FFN, tested against a MoE on a rigorous reasoning suite"
+type: software
+authors:
+  - given-names: "Naitik"
+    alias: "XTErion"
+    orcid: "https://orcid.org/0009-0004-0820-7660"
+version: "0.1.0"
+date-released: "2026-10-22"
+doi: "10.5281/zenodo.23552538"
+license: MIT
