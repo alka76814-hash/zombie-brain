@@ -1,6 +1,6 @@
 # Zombie-Brain: a shared product-key memory in place of the FFN, tested against a MoE on a rigorous reasoning suite
 
-**Naitik (XTErion)** · independent research · October 2026 · code, benchmark and raw results in this repository
+**Naitik (XTErion)** ([ORCID](https://orcid.org/0009-0004-0820-7660)) · independent research · October 2026 · [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23552538.svg)](https://doi.org/10.5281/zenodo.23552538) · code, benchmark and results in this repository
 
 > **Authorship and AI disclosure.** The core design (replacing the FFN with a shared product-key memory, reinvesting the freed budget in attention, and the experimental question) was made by the author, an independent student researcher. **The code, the benchmark implementation, the experiment scripts and the first draft of this text were written by an AI model (Claude, by Anthropic)** working from the author's design and direction. The author ran all experiments and reviewed the results. Please read the code and results with that in mind and open an issue if you find an error.
 
@@ -120,8 +120,10 @@ Runtime on 2×T4: ≈4–5 h. `/kaggle/working` can be wiped between sessions (i
 
 ```
 Naitik (XTErion). Zombie-Brain: a shared product-key memory in place of the FFN, tested against a MoE
-on a rigorous reasoning suite. 2026. (DOI on release)
+on a rigorous reasoning suite. v0.1.0, 2026. https://doi.org/10.5281/zenodo.23552538
 ```
+
+DOI: [10.5281/zenodo.23552538](https://doi.org/10.5281/zenodo.23552538) · ORCID: [0009-0004-0820-7660](https://orcid.org/0009-0004-0820-7660) · GitHub's "Cite this repository" button reads `CITATION.cff`.
 
 ## 11. License
 
